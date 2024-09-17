@@ -1,3 +1,3 @@
 class Config {
-  static const String apiUrl = 'http://localhost:8000/api/';
+  static const String apiUrl = 'https://east.admin.cybersecuritylab.az/api/';
 }
