@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:work_app/api/config.dart';
-import 'dart:convert';
-
 import 'package:work_app/screens/permission/user-permission.dart';
 import 'package:work_app/screens/profile/user_profile.dart';
 
@@ -22,19 +17,15 @@ class _UserLocationState extends State<UserLocation> {
   String userName = "UserName";
   String userSurname = "UserSurname";
   String userPhone = "UserPhone";
-  String userEmail = "UserEmail";
   bool isWorkingButtonVisible = false;
   final LatLng officeLocation = LatLng(40.36878995923975, 49.82711960253402);
   String? selectedReason;
-  bool isFormVisible = true; // Formun görünürlüğünü kontrol eder
-  String successMessage = ''; // Başarı mesajı için
 
   @override
   void initState() {
     super.initState();
     loadUserDetails();
     _checkProximityToOffice();
-    _checkTimePassed();
   }
 
   Future<void> loadUserDetails() async {
@@ -43,7 +34,6 @@ class _UserLocationState extends State<UserLocation> {
       userName = prefs.getString('user_name') ?? "UserName";
       userSurname = prefs.getString('user_surname') ?? "UserSurname";
       userPhone = prefs.getString('user_phone') ?? "UserPhone";
-      userEmail = prefs.getString('user_email') ?? "UserEmail";
     });
   }
 
@@ -65,118 +55,38 @@ class _UserLocationState extends State<UserLocation> {
     }
   }
 
-  Future<void> sendReason(String reason, String email, String name) async {
-  const String apiUrl = Config.apiUrl + 'save-permission-reason';
-
-    try {
-    var client = http.Client();
-    var request = http.Request('POST', Uri.parse(apiUrl));
-    request.headers['Content-Type'] = 'application/json';
-    request.body = jsonEncode({
-      'user_email': email,
-      'reason': reason,
-      'user_name': name,
-    });
-
-    final response = await client.send(request);
-
-    if (response.statusCode == 200) {
-      print('Başarıyla kaydedildi');
-      _saveSubmissionTime();
-      setState(() {
-        successMessage = 'Başarıyla gönderildi!';
-        isFormVisible = false; 
-      });
-    } else {
-      print('Hata: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('İstek sırasında hata oluştu: $e');
-  }
-}
-
-  Future<void> _saveSubmissionTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('last_submission_time', DateTime.now().millisecondsSinceEpoch);
-  }
-
-  Future<void> _checkTimePassed() async {
-    final prefs = await SharedPreferences.getInstance();
-    int? lastSubmissionTime = prefs.getInt('last_submission_time');
-    if (lastSubmissionTime != null) {
-      int currentTime = DateTime.now().millisecondsSinceEpoch;
-      int elapsedTime = currentTime - lastSubmissionTime;
-
-      // 12 saati ms cinsinden kontrol et (12 saat = 43200000 milisaniye)
-      if (elapsedTime >= 43200000) {
-        setState(() {
-          isFormVisible = true; // 12 saat geçtiyse form tekrar aktif olsun
-        });
-      } else {
-        setState(() {
-          isFormVisible = false; // 12 saat geçmemişse form gizli
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.fromLTRB(15, 0, 15, 6),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-          color: Colors.black,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.grey[300],
+        title: Text(
+          '$userName $userSurname',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        child: GNav(
-          color: Colors.white,
-          activeColor: Colors.white,
-          tabBackgroundColor: Colors.grey.shade800,
-          padding: const EdgeInsets.all(20),
-          gap: 5,
-          selectedIndex: 0,
-          onTabChange: (index) {
-            switch(index){
-              case 0:
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.border_color),
+            iconSize: 30,
+            onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                      builder: (context) => const UserLocation(),
-                    ),
+                MaterialPageRoute(builder: (context) => const UserPermission()),
               );
-              break;
-              case 1:
-              Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserPermission(),
-                    ),
-                  );
-              break;
-              case 2:
-               Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const UserProfile(),
-                    ),
-                  );
-                  break;
-              }
             },
-          tabs: const [
-            GButton(
-              icon: Icons.location_city,
-            ),
-            GButton(
-              icon: Icons.border_color,
-            ),
-            GButton(
-              icon: Icons.person,
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person),
+            iconSize: 30,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UserProfile()),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -209,7 +119,8 @@ class _UserLocationState extends State<UserLocation> {
             child: Center(
               child: isWorkingButtonVisible
                   ? GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                      },
                       child: Container(
                         height: 50,
                         width: 130,
@@ -233,9 +144,9 @@ class _UserLocationState extends State<UserLocation> {
                   : const SizedBox(),
             ),
           ),
-          if (!isWorkingButtonVisible && isFormVisible) // Form görünürlüğü kontrolü
+          if (!isWorkingButtonVisible) 
             Positioned(
-              bottom: 60,
+              bottom: 60, 
               left: 0,
               right: 0,
               child: Center(
@@ -250,8 +161,7 @@ class _UserLocationState extends State<UserLocation> {
                       child: DropdownButton<String>(
                         value: selectedReason,
                         hint: const Text("Neden Çalışamıyorsunuz?"),
-                        items: <String>["Trafik Var", "Hastayım", "Lotuyam"]
-                            .map((String value) {
+                        items: <String>["Trafik Var", "Hastayım","Lotuyam"].map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -264,11 +174,11 @@ class _UserLocationState extends State<UserLocation> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 20), 
                     GestureDetector(
                       onTap: () {
                         if (selectedReason != null) {
-                          sendReason(selectedReason!, userEmail,userName);
+                          print("Seçilen neden: $selectedReason");
                         }
                       },
                       child: Container(
@@ -292,21 +202,6 @@ class _UserLocationState extends State<UserLocation> {
                       ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          if (successMessage.isNotEmpty) 
-            Positioned(
-              bottom: 120,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text(
-                  successMessage,
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
             ),

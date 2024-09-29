@@ -27,14 +27,14 @@ void _scheduleNotificationForNextSpecificTime() {
   DateTime now = DateTime.now();
   DateTime targetTime = DateTime(now.year, now.month, now.day, 09, 00);
 
-  print("Şu anki zaman: $now");
-  print("Hedef zaman: $targetTime");
+  // print("Şu anki zaman: $now");
+  // print("Hedef zaman: $targetTime");
 
   if (now.isAfter(targetTime)) {
     targetTime = targetTime.add(Duration(days: 1));
   }
 
-  print("Yeni hedef zaman: $targetTime");
+  // print("Yeni hedef zaman: $targetTime");
 
   AwesomeNotifications().createNotification(
     content: NotificationContent(

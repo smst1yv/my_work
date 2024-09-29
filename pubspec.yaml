@@ -45,6 +45,7 @@ dependencies:
   http: ^1.2.2
   connectivity_plus: ^6.0.5
   awesome_notifications: ^0.9.3+1
+  google_nav_bar: ^5.0.6
 dev_dependencies:
   flutter_test:
     sdk: flutter

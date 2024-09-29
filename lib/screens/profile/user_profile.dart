@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:work_app/screens/map/user-map.dart';
+import 'package:work_app/screens/permission/user-permission.dart';
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -34,18 +37,61 @@ class _UserProfileState extends State<UserProfile> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.grey[300],
-        appBar: AppBar(
-          title: Text('My Profile'),
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
+         bottomNavigationBar: Container(
+        margin: EdgeInsets.fromLTRB(15, 0, 15, 6),
+        padding: EdgeInsets.fromLTRB(15, 10, 15, 10,),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          color: Colors.black,
+        ),  
+          child: GNav(
+            color: Colors.white,
+            activeColor: Colors.white,
+            tabBackgroundColor: Colors.grey.shade800,
+            padding: EdgeInsets.all(20),
+            gap: 5,
+            selectedIndex: 2,
+            onTabChange: (index) {
+              switch (index) {
+                case 0:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserLocation(),
+                    ),
+                  );
+                  break;
+                case 1:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserPermission(),
+                    ),
+                  );
+                  break;
+                case 2:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const UserProfile(),
+                    ),
+                  );
+                  break;
+              }
             },
-            icon: Icon(
-              Icons.arrow_back,
-              color: Colors.black,
-            ),
+            tabs: const [
+              GButton(
+                icon: Icons.location_city,
+              ),
+              GButton(
+                icon: Icons.border_color,
+              ),
+              GButton(
+                icon: Icons.person,
+              ),
+            ],
           ),
-        ),
+      ),
         body: Container(
           padding: EdgeInsets.only(left: 15, top: 20, right: 15),
           child: GestureDetector(
